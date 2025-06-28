@@ -20,6 +20,18 @@
         // Update the date on the page
         window.onload = function () {
             document.getElementById('date').innerText = getCurrentDate();
+// change theme
+          const savedTheme = localStorage.getItem("userTheme") || "light";
+document.body.classList.add(savedTheme);
+
+
+          //to change profile pic
+            const profilePic = localStorage.getItem("userProfilePic");
+if (profilePic) {
+    document.querySelectorAll(".profile-pic").forEach(pic => pic.src = profilePic);
+    document.querySelectorAll(".dropdown-pic").forEach(pic => pic.src = profilePic);
+}
+
 
             // Load user data from localStorage
     const name = localStorage.getItem("userName");

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customize Profile</title>
+  <link rel="stylesheet" href="customize_profile.css">
+
+  <style>
+    /* Basic styling to support light and dark theme */
+    body.light {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: inherit;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+
+    .profile-preview {
+      margin-top: 10px;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      border: none;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+
+  <script>
+    // Load saved profile data and apply theme
+    window.onload = function () {
+      const name = localStorage.getItem("userName");
+      const email = localStorage.getItem("userEmail");
+      const theme = localStorage.getItem("userTheme");
+      const profilePic = localStorage.getItem("userProfilePic");
+
+      if (name) document.getElementById("name").value = name;
+      if (email) document.getElementById("email").value = email;
+      if (theme) {
+        document.getElementById("theme").value = theme;
+        document.body.classList.add(theme); // Apply theme immediately
+      } else {
+        document.body.classList.add("light"); // Default to light
+      }
+
+      if (profilePic) {
+        document.getElementById("preview").src = profilePic;
+      }
+    };
+
+    // Handle profile picture upload and preview
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const dataUrl = reader.result;
+        document.getElementById("preview").src = dataUrl;
+        localStorage.setItem("userProfilePic", dataUrl);
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Save updated profile info
+    function saveChanges() {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const theme = document.getElementById("theme").value;
+
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userTheme", theme);
+
+      alert("Profile updated successfully!");
+
+      window.location.href = "teacher_dashboard_page.html";
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Customize Your Profile</h2>
+
+    <label for="name">Name:</label>
+    <input type="text" id="name" placeholder="Enter your name">
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Enter your email">
+
+    <label for="profilePic">Profile Picture:</label>
+    <input type="file" accept="image/*" onchange="handleImageUpload(event)">
+    <img id="preview" src="img/profile_pic.jpeg" alt="Profile Preview" class="profile-preview">
+
+    <label for="theme">Theme:</label>
+    <select id="theme">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+
+    <div class="buttons">
+      <button onclick="saveChanges()">Save</button>
+      <button onclick="window.location.href='teacher_dashboard_page.html'">Cancel</button>
+    </div>
+  </div>
+</body>
+</html>

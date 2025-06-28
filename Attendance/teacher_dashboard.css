@@ -777,3 +777,13 @@ body {
 .profile-dropdown button:hover {
   background-color: #e6f3ff;
 }
+
+body.light {
+  background-color: #f0f0f0;
+  color: #000000;
+}
+
+body.dark {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
