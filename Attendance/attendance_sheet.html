@@ -1,0 +1,61 @@
+<!-- attendance_sheet.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Sheet</title>
+  <style>
+    .section-card {
+      border: 1px solid #aaa;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 5px;
+      background-color: #f2f2f2;
+      cursor: pointer;
+    }
+    .section-card:hover {
+      background-color: #e0e0e0;
+    }
+  </style>
+  <script>
+    window.onload = function () {
+      const data = JSON.parse(localStorage.getItem('attendanceData'));
+      if (!data) {
+        alert("Attendance form is not filled up.");
+        return;
+      }
+
+      const container = document.getElementById('cards');
+      const { batchNo, deptNo, sections } = data;
+
+      const info = document.getElementById('info');
+      info.innerText = `Batch: ${batchNo}, Department: ${deptNo}, Total Sections: ${sections.length}`;
+
+      sections.forEach((section, index) => {
+        const card = document.createElement('div');
+        card.className = 'section-card';
+        card.innerHTML = `
+          <h3>Section ${String.fromCharCode(65 + index)}</h3>
+          <p>Starting ID: ${section.startingId}</p>
+          <p>Ending ID: ${section.endingId}</p>
+        `;
+
+        // Add click event to navigate to section-specific page
+        card.onclick = function () {
+          localStorage.setItem('selectedSection', JSON.stringify(section));
+          window.location.href = 'attendance_sheet_section.html';
+        };
+
+        container.appendChild(card);
+      });
+    };
+  </script>
+</head>
+<body>
+  <h2>Attendance Sheet</h2>
+  <p id="info"></p>
+  <div id="cards"></div>
+</body>
+</html>
+
+

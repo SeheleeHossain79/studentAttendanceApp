@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section Attendance</title>
+  <link rel="stylesheet" href="attendance_sheet_section.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+
+  <!-- Container for the content -->
+  <div class="container">
+    <!-- Full Screen Button (Only) inside container -->
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="goToIndividualStudent()">⏜</button>
+
+    <!-- Section Header -->
+    <div class="section-header" id="sectionHeader"></div>
+
+    <!-- Date Input for Attendance -->
+    <div class="date-input">
+      <label for="attendanceDate">Select Date:</label><br>
+      <input type="date" id="attendanceDate" />
+    </div>
+
+    <!-- Roll List -->
+    <div class="roll-list" id="rollList"></div>
+
+    <!-- Submit Attendance Button -->
+    <button class="btn" onclick="submitAttendance()">Submit Attendance</button>
+  </div>
+
+  <script>
+    let sectionInfo = null;
+
+    window.onload = function () {
+      const section = JSON.parse(localStorage.getItem('selectedSection'));
+      if (!section) {
+        document.body.innerHTML = "<h2>No section selected.</h2>";
+        return;
+      }
+      sectionInfo = section;
+
+      const sectionIndex = parseInt(section.section) - 1;
+      const sectionName = String.fromCharCode(65 + sectionIndex);
+      document.getElementById('sectionHeader').innerText =
+        `Section ${sectionName} — Starting ID: ${section.startingId}, Ending ID: ${section.endingId}`;
+
+      renderRolls(section.startingId, section.endingId, section.batchNo, section.deptCode);
+    };
+
+    function renderRolls(startId, endId, batchNo, deptCode) {
+      const container = document.getElementById("rollList");
+      container.innerHTML = '';
+
+      let serial = 1; // Starting from 001
+      for (let i = parseInt(startId); i <= parseInt(endId); i++) {
+        const studentID = `${batchNo}${deptCode}${String(serial).padStart(3, '0')}`;
+        const row = document.createElement("div");
+        row.className = "roll-item";
+        row.innerHTML = `
+          <span>${studentID}</span>
+          <button id="btn-${i}" class="toggle-btn present" onclick="toggleStatus(${i})">Present</button>
+        `;
+        container.appendChild(row);
+        serial++;
+      }
+    }
+
+    function toggleStatus(roll) {
+      const btn = document.getElementById(`btn-${roll}`);
+      if (btn.classList.contains("present")) {
+        btn.classList.remove("present");
+        btn.classList.add("absent");
+        btn.innerText = "Absent";
+      } else {
+        btn.classList.remove("absent");
+        btn.classList.add("present");
+        btn.innerText = "Present";
+      }
+    }
+
+    function submitAttendance() {
+      const start = parseInt(sectionInfo.startingId);
+      const end = parseInt(sectionInfo.endingId);
+      const date = document.getElementById("attendanceDate").value || "Not Provided";
+
+      const result = {
+        date: date,
+        attendance: []
+      };
+
+      for (let i = start; i <= end; i++) {
+        const btn = document.getElementById(`btn-${i}`);
+        const isPresent = btn.classList.contains("present");
+        result.attendance.push({ roll: i, present: isPresent });
+      }
+
+      console.log("Submitted Attendance:", result);
+      alert("Attendance saved! (See console)");
+    }
+
+    function goToIndividualStudent() {
+      // Redirect to individual_student.html page
+      window.location.href = 'individual_student.html';
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View CT Marks</title>
+  <link rel="stylesheet" href="teacher_dashboard.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .student-record {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px auto;
+      max-width: 700px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: 0.2s ease-in-out;
+    }
+
+    .student-record:hover {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    }
+
+    .student-header {
+      font-size: 18px;
+      font-weight: bold;
+      color: #34495e;
+      margin-bottom: 12px;
+    }
+
+    .ct-marks {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .ct-marks input {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+
+    .ct-marks input:disabled {
+      color: #666;
+    }
+
+    .action-buttons {
+      text-align: right;
+    }
+
+    .action-buttons button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.2s;
+      font-weight: 500;
+    }
+
+    .action-buttons button:hover {
+      background-color: #2d80c0;
+    }
+
+    .best-ct-result {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #27ae60;
+      display: inline-block;
+    }
+
+    @media screen and (max-width: 600px) {
+      .ct-marks {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>CT Marks Record</h2>
+  <div id="ctRecordList"></div>
+
+  <script>
+    // Debug: check credit from localStorage, fallback to 3 if not found
+    const creditStr = localStorage.getItem("selectedCourseCredit");
+    const credit = creditStr ? parseFloat(creditStr) : 3;
+    console.log("Loaded credit:", credit);
+
+    const totalCTs = credit + 1;  // Number of CT inputs (e.g. 3 credit => 4 CTs)
+    const bestCount = totalCTs - 1; // Number of best CTs to count (e.g. 4 CTs => best 3)
+
+    // Fetch saved marks from localStorage or empty object
+    const marksData = JSON.parse(localStorage.getItem("ctMarksRecord")) || {};
+    const container = document.getElementById("ctRecordList");
+
+    // Clear container in case of reloads
+    container.innerHTML = "";
+
+    // Render student records
+    Object.entries(marksData).forEach(([studentID, ctMarks]) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "student-record";
+
+      // Generate CT inputs for totalCTs with keys CT1, CT2, ..., CTn
+      const ctInputs = [];
+      for(let i = 1; i <= totalCTs; i++) {
+        const key = `CT${i}`;
+        const value = ctMarks[key] !== undefined ? ctMarks[key] : "0";
+        ctInputs.push(`<input type="number" min="0" max="100" value="${value}" data-student="${studentID}" data-ct="${key}" disabled />`);
+      }
+
+      wrapper.innerHTML = `
+        <div class="student-header">Student ID: ${studentID}</div>
+        <div class="ct-marks">${ctInputs.join("")}</div>
+        <div class="action-buttons">
+          <button onclick="editMarks('${studentID}')">Edit</button>
+          <button onclick="saveUpdatedMarks('${studentID}')">Save</button>
+          <span id="best-${studentID}" class="best-ct-result"></span>
+        </div>
+      `;
+
+      container.appendChild(wrapper);
+
+      // Calculate best CT sum automatically for each student initially
+      calculateBest(studentID);
+    });
+
+    // Enable editing of inputs for one student
+    function editMarks(studentID) {
+      const inputs = document.querySelectorAll(`input[data-student="${studentID}"]`);
+      inputs.forEach(input => input.disabled = false);
+    }
+
+    // Save updated marks and disable inputs, then recall best sum
+    function saveUpdatedMarks(studentID) {
+      const inputs = document.querySelectorAll(`input[data-student="${studentID}"]`);
+      const updated = {};
+
+      inputs.forEach(input => {
+        updated[input.dataset.ct] = input.value || "0";
+        input.disabled = true;
+      });
+
+      // Save back to localStorage
+      const allMarks = JSON.parse(localStorage.getItem("ctMarksRecord")) || {};
+      allMarks[studentID] = updated;
+      localStorage.setItem("ctMarksRecord", JSON.stringify(allMarks));
+
+      calculateBest(studentID);
+      alert("Marks updated for " + studentID);
+    }
+
+    // Calculate sum of best (credit) CT scores from (credit + 1) total CTs
+    function calculateBest(studentID) {
+      const inputs = document.querySelectorAll(`input[data-student="${studentID}"]`);
+      const scores = Array.from(inputs).map(input => parseFloat(input.value) || 0);
+
+      if(scores.length < 2) {
+        document.getElementById(`best-${studentID}`).innerText = "Not enough CTs";
+        return;
+      }
+
+      // Sort descending, sum bestCount highest values
+      const bestTotal = scores
+        .sort((a,b) => b - a)
+        .slice(0, bestCount)
+        .reduce((sum, val) => sum + val, 0);
+
+      document.getElementById(`best-${studentID}`).innerText = `Best ${bestCount} of ${totalCTs}: ${bestTotal}`;
+    }
+  </script>
+</body>
+</html>
